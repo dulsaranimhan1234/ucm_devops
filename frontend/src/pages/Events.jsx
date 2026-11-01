@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import api, { errorMessage } from "../api/client";
 import EventCard from "../components/EventCard";
 import Icon from "../components/Icon";
-import { Alert, EmptyState, Loader, PageHeader } from "../components/ui";
+import { Alert, EmptyState, Loader, PageHeader, RetryState } from "../components/ui";
 import { toDate } from "../utils/format";
 
 const TABS = [
@@ -31,13 +31,16 @@ function Events() {
   const [loaded, setLoaded] = useState({ tab: null, events: [] });
   const events = loaded.tab === tab ? loaded.events : null;
   const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   const load = useCallback(() => {
     api
       .get("/events", { params: { scope: tab } })
-      .then((res) => setLoaded({ tab, events: res.data.events }))
-      .catch((err) => setError(errorMessage(err)));
+      .then((res) => {
+        setLoaded({ tab, events: res.data.events });
+        setError(null);
+      })
+      .catch((err) => setError({ tab, message: errorMessage(err) }));
   }, [tab]);
 
   useEffect(() => {
@@ -57,7 +60,7 @@ function Events() {
     <div className="page">
       <PageHeader eyebrow="What's on" title="Events" subtitle="Workshops, competitions, meetups and more from every club." />
 
-      <Alert onClose={() => setError("")}>{error}</Alert>
+      <Alert onClose={() => setError(null)}>{error?.tab === tab && events ? error.message : null}</Alert>
 
       <div className="toolbar">
         <div className="tabs inline" role="tablist">
@@ -80,7 +83,7 @@ function Events() {
       </div>
 
       {!events ? (
-        <Loader />
+        error?.tab === tab ? <RetryState message={error.message} onRetry={() => { setError(null); load(); }} /> : <Loader />
       ) : visible.length === 0 ? (
         <EmptyState icon="calendar" title={term ? "No matching events" : "Nothing here yet"}>
           {tab === "registered"

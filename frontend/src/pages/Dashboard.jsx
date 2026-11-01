@@ -4,7 +4,7 @@ import api, { errorMessage } from "../api/client";
 import { useAuth } from "../context/authContext";
 import EventCard from "../components/EventCard";
 import Icon from "../components/Icon";
-import { Alert, ClubAvatar, EmptyState, Loader, PageHeader, StatusBadge } from "../components/ui";
+import { Alert, ClubAvatar, EmptyState, Loader, PageHeader, RetryState, StatusBadge } from "../components/ui";
 import { timeAgo } from "../utils/format";
 
 function greeting() {
@@ -51,7 +51,7 @@ function Dashboard() {
   useEffect(load, [load]);
 
   if (!data) {
-    return error ? <Alert>{error}</Alert> : <Loader />;
+    return error ? <div className="page"><RetryState message={error} onRetry={() => { setError(""); load(); }} /></div> : <Loader />;
   }
 
   const { stats } = data;

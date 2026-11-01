@@ -4,7 +4,7 @@ import api, { errorMessage } from "../api/client";
 import { useAuth } from "../context/authContext";
 import ClubForm from "../components/ClubForm";
 import Icon from "../components/Icon";
-import { Alert, ClubAvatar, EmptyState, Loader, Modal, PageHeader, StatusBadge } from "../components/ui";
+import { Alert, ClubAvatar, EmptyState, Loader, Modal, PageHeader, RetryState, StatusBadge } from "../components/ui";
 
 function Clubs() {
   const { isAdmin, accountType } = useAuth();
@@ -41,7 +41,7 @@ function Clubs() {
     }
   };
 
-  if (!clubs) return error ? <Alert>{error}</Alert> : <Loader />;
+  if (!clubs) return error ? <div className="page"><RetryState message={error} onRetry={() => { setError(""); load(); }} /></div> : <Loader />;
 
   const categories = ["All", ...new Set(clubs.map((c) => c.category))];
   const term = search.trim().toLowerCase();

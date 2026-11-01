@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Icon from "./Icon";
 import { colorFor, initials } from "../utils/format";
 
@@ -51,10 +51,23 @@ export function EmptyState({ icon = "inbox", title, children, action }) {
   );
 }
 
+export function RetryState({ message, onRetry }) {
+  return (
+    <EmptyState
+      icon="inbox"
+      title="We couldn't load this page"
+      action={<button className="btn btn-primary" onClick={onRetry}>Try again</button>}
+    >
+      {message}
+    </EmptyState>
+  );
+}
+
 export function ClubAvatar({ name, logoUrl, size = 52 }) {
+  const [failedLogoUrl, setFailedLogoUrl] = useState(null);
   const style = { width: size, height: size, fontSize: size * 0.36 };
-  if (logoUrl) {
-    return <img className="club-avatar" src={logoUrl} alt="" style={style} />;
+  if (logoUrl && failedLogoUrl !== logoUrl) {
+    return <img className="club-avatar" src={logoUrl} alt="" style={style} onError={() => setFailedLogoUrl(logoUrl)} />;
   }
   return (
     <div className="club-avatar" style={{ ...style, background: colorFor(name) }}>
