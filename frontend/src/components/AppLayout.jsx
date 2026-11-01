@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { initials } from "../utils/format";
@@ -22,12 +22,21 @@ export default function AppLayout() {
     navigate("/login");
   };
 
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
   const accountLinks = accountType === "club" ? NAV.map((link) => link.to === "/dashboard" ? { ...link, label: "Club overview" } : link.to === "/clubs" ? { ...link, label: "My clubs" } : link) : NAV;
   const links = isAdmin ? [...accountLinks, { to: "/admin", label: "Administration", icon: "shield" }] : accountLinks;
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
+      <aside id="primary-navigation" className={`sidebar ${menuOpen ? "open" : ""}`} aria-label="Primary navigation">
         <div className="sidebar-brand">
           <div className="brand-name">UCM</div>
           <div className="brand-title">
@@ -68,8 +77,8 @@ export default function AppLayout() {
 
       <div className="app-main">
         <header className="mobile-bar">
-          <button className="icon-button" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <Icon name="menu" />
+          <button className="icon-button" onClick={() => setMenuOpen((open) => !open)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="primary-navigation">
+            <Icon name={menuOpen ? "x" : "menu"} />
           </button>
           <span className="mobile-brand">UCM</span>
           <div className="avatar small">{initials(user?.name)}</div>
